@@ -1,4 +1,4 @@
-# Liqiangbo - Corrugated Web Structural Optimization
+# Corrugated Web Structural Optimization
 
 This repository contains MATLAB scripts for topology optimization and buckling analysis of corrugated steel webs and flat plates, developed for the research project "Structural Optimization of Corrugated Plates for Improved Elastic Shear Buckling Capacity".
 
