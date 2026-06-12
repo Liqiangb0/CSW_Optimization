@@ -50,7 +50,10 @@ root/
 ---
 
 ## References
-[1] F. Ferrari, O. Sigmund, J.K. Guest, Topology optimization with linearized buckling criteria in 250 lines of Matlab, Struct Multidisc Optim 63 (2021) 3045–3066. https://doi.org/10.1007/s00158-021-02854-x.
-[2] Svanberg K. A Class of Globally Convergent Optimization Methods Based on Conservative Convex Separable Approximations. SIAM J Optim 2002;12:555–73. https://doi.org/10.1137/S1052623499362822.
-[3] Svanberg K. The method of moving asymptotes—a new method for structural optimization. International Journal for Numerical Methods in Engineering 1987;24:359–73. https://doi.org/10.1002/nme.1620240207.
-[4] K. Svanberg, MMA and GCMMA – two methods for nonlinear optimization.
+[1] F. Ferrari, O. Sigmund, J.K. Guest, Topology optimization with linearized buckling criteria in 250 lines of Matlab, Struct Multidisc Optim 63 (2021) 3045–3066. https://doi.org/10.1007/s00158-021-02854-x.  
+
+[2] Svanberg K. A Class of Globally Convergent Optimization Methods Based on Conservative Convex Separable Approximations. SIAM J Optim 2002;12:555–73. https://doi.org/10.1137/S1052623499362822.  
+
+[3] Svanberg K. The method of moving asymptotes—a new method for structural optimization. International Journal for Numerical Methods in Engineering 1987;24:359–73. https://doi.org/10.1002/nme.1620240207.  
+
+[4] K. Svanberg, MMA and GCMMA – two methods for nonlinear optimization.  
