@@ -2,10 +2,11 @@ function loop = CSWBuck(nelx,nely,nelz,penalK,rmin,filter,filterBC,eta,beta,ocPa
 tic;updateRule = 'MMA';phiOutputInv = 50;isPlotBucklingMode = 0;isPlotCurrentDesign = 0;isPlotWaveform = 1;
 %% PRE. 0) Create folder for saving results
 meshtxt = ['Mesh' num2str(nelx) 'x' num2str(nely) 'x' num2str(nelz)];
-dictionaryName = [meshtxt '_' char(datetime('now', 'Format', 'yyyyMMddHHmmss'))];
-if ~exist(dictionaryName,'dir');mkdir(dictionaryName);end;addpath(dictionaryName);% Create a folder named dictinary
-fileTitle = [dictionaryName '\' meshtxt '_' prSel{1}];
-topHistoryFileID = fopen([fileTitle '_TopHistory.txt'],'w');% Create txt file to save top. history
+folderName = [meshtxt '_' char(datetime('now', 'Format', 'yyyyMMddHHmmss'))];
+if ~exist(folderName,'dir');mkdir(folderName);end;addpath(folderName);     % Create a folder
+filePrefix = [meshtxt '_' prSel{1}];
+fullFilePrefix = fullfile(folderName, filePrefix);
+topHistoryFileID = fopen([fullFilePrefix '_TopHistory.txt'],'w');          % Create txt file to save top. history
 fprintf(topHistoryFileID,'%10s\t%2s\t%2s\t%6s\t%6s\t%3s\t%4s\t%4s\t%6s\t%7s\t%7s\t%10s\t%10s\t%8s\t%9s\r\n',...
     'Iteration','g0','g1','penalK','penalG','eta','beta','pAgg','change','lambda1','lambda2','Compliance','Vol. Frac.','CPU time','Real time');
 % create figure
@@ -22,7 +23,7 @@ betaCnt = {400,2,25,0.5};                                                  % con
 pAggCnt = {1e5,1e8,25,2e3};                                                % continuation schema on KS aggregation factor
 cnt = @(v,vCn,l) v+ (l>=vCn{1}).*(v<vCn{2}).*(mod(l,vCn{3})==0).*vCn{4};   % function applying continuation
 if prSel{1}(1) == 'V', volfrac = 1.0; else, volfrac = prSel{2}(end); end   % initialize volume fraction
-save([fileTitle '_Input.mat'],'nelx','nely','nelz','penalK','rmin',...
+save([fullFilePrefix '_Input.mat'],'nelx','nely','nelz','penalK','rmin',...
     'filter','filterBC','eta','beta','ocParam','itmax','Lx','penalG',...
     'nEig','pAgg','prSel','updateRule','phiOutputInv','penalCntK',...
     'penalCntG','betaCnt','pAggCnt');               % save input parameters
@@ -51,7 +52,7 @@ efaces = [1, 2, 3, 4;... % face in the plane XOY
           3, 7, 8, 4;... % face in the plane XOZ
           4, 8, 5, 1];   % face in the plane YOZ (Orientation points to the inside of the element)
 % face numbering(https://abaqus-docs.mit.edu/2017/English/SIMACAEELMRefMap/simaelm-r-3delem.htm)
-save([fileTitle '_MeshInfo'],'elements','nodes','efaces','centerX','centerY','centerZ');
+save([fullFilePrefix '_MeshInfo'],'elements','nodes','efaces','centerX','centerY','centerZ');
 % >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Post-processing
 % -------------------------------elemental stiffness matrix H8 element #3D#
 Ke = 1/(1+nu)/(1-2*nu)/144*(...
@@ -440,9 +441,9 @@ while loop < itmax && ch > 1e-6                                            % Two
     faces = reshape(elements(eIndex,efaces')',4,[])';
     % save physical density
     xPhysMat = reshape(xPhys,nelx,nely,nelz);
-    save([fileTitle '_xPhysMat_It' num2str(loop) '.mat'],'xPhysMat');
+    save([fullFilePrefix '_xPhysMat_It' num2str(loop) '.mat'],'xPhysMat');
     % save displacment U
-    save([fileTitle '_U_It' num2str(loop) '.mat'],'U');
+    save([fullFilePrefix '_U_It' num2str(loop) '.mat'],'U');
     if isPlotCurrentDesign == 1% <<<<<<<<<<<<<<<<<<<<< figure CurrentDesign
         % calculated isometric surfaces and end caps.
         isovals = smooth3(xPhysMat,'box',1);
@@ -468,9 +469,9 @@ while loop < itmax && ch > 1e-6                                            % Two
     end% >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>figure Waveform 
     if any(prSel{1} == 'B') % Plot design, g0&g1 evolution, BLFs evolution
         % Save
-        if loop == 1 || mod(loop,phiOutputInv) == 0,save([fileTitle '_phi_It' num2str(loop) '.mat'],'phi');end% save current eigenvector
-        save([fileTitle '_mu.mat'],'muVec');                               % update ever loop
-        save([fileTitle '_gi.mat'],'plotL','strL','plotR','strR');         % update ever loop
+        if loop == 1 || mod(loop,phiOutputInv) == 0,save([fullFilePrefix '_phi_It' num2str(loop) '.mat'],'phi');end% save current eigenvector
+        save([fullFilePrefix '_mu.mat'],'muVec');                               % update ever loop
+        save([fullFilePrefix '_gi.mat'],'plotL','strL','plotR','strR');         % update ever loop
         % Plot % <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<figure History
         figure(f_History);
         f_History.Name = [meshtxt '_' prSel{1} '_Obj&ConstValues_It' num2str(loop)];
@@ -512,8 +513,8 @@ while loop < itmax && ch > 1e-6                                            % Two
 end
 %%
 fclose(topHistoryFileID);
-saveas(f_History,[fileTitle '_It' num2str(loop) '_Obj&ConstValues.fig']);
-if isPlotCurrentDesign == 1, saveas(f_CurrentDesign,[fileTitle '_It' num2str(loop) '.fig']);end
-if isPlotWaveform == 1, saveas(f_Waveform,[fileTitle '_It' num2str(loop) '_Waveform.fig']);end
-if any(prSel{1} == 'B')&&isPlotBucklingMode,saveas(f_BucklingMode,[fileTitle '_It' num2str(loop) '_Buckling Mode.fig']);end
+saveas(f_History,[fullFilePrefix '_It' num2str(loop) '_Obj&ConstValues.fig']);
+if isPlotCurrentDesign == 1, saveas(f_CurrentDesign,[fullFilePrefix '_It' num2str(loop) '.fig']);end
+if isPlotWaveform == 1, saveas(f_Waveform,[fullFilePrefix '_It' num2str(loop) '_Waveform.fig']);end
+if any(prSel{1} == 'B')&&isPlotBucklingMode,saveas(f_BucklingMode,[fullFilePrefix '_It' num2str(loop) '_Buckling Mode.fig']);end
 end
