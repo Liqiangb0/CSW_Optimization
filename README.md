@@ -45,6 +45,7 @@ root/
 │   └── mmasub_new.m                       # Modified MMA optimization solver
 ├── Mesh18x96x24_202606111173945/          # Generated mesh/result folder 1
 └── Mesh18x96x24_20260612091023/           # Generated mesh/result folder 2
+```
 
 ## References
 [1] F. Ferrari, O. Sigmund, J.K. Guest, Topology optimization with linearized buckling criteria in 250 lines of Matlab, Struct Multidisc Optim 63 (2021) 3045–3066. https://doi.org/10.1007/s00158-021-02854-x.
