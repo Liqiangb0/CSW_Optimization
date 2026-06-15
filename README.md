@@ -45,8 +45,10 @@ root/
 │   └── mmasub_new.m                       # Modified MMA optimization solver
 ├── Mesh18x96x24_202606111173945/          # Generated mesh/result folder 1
 ├── Mesh18x96x24_20260612091023/           # Generated mesh/result folder 2
-└── Benchmark
-    └── Benchmark.m                    # Benchmark script for 3D linear buckling analysis
+├── Benchmark
+│   └── Benchmark.m                    # Benchmark script for 3D linear buckling analysis
+└── Benchmark_2
+     └── Benchmark_2.m                  # Benchmark script for linear buckling analysis of a simply supported plate subjected to uniaxial uniform compression
 ```
 
 ---

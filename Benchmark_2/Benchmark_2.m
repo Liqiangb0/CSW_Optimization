@@ -1,4 +1,4 @@
-% Benchmark: 3D linear buckling analysis
+% Benchmark: Simply supported plate under uniaxial uniform compression
 %% 0. Setting
 nelx = 4;
 nely = 100;
@@ -147,24 +147,45 @@ indexG = sort([iG(:),jG(:)],2,'descend');
 [a1,a2] = deal(reshape(indexG(:,2),36,nEl)', reshape(indexG(:,1),36,nEl)');
 
 %% 5. Boundary Conditions
-fixedNodeSet1 = reshape(nodeNrs(:,1,:),[],1);
-fixedNodeSet2 = reshape(nodeNrs(:,end,:),[],1);
-fixedNodeSet3 = reshape(nodeNrs(:,:,[1 end]),[],1);
-fixedSet1 = [3*fixedNodeSet1;3*fixedNodeSet1-1;3*fixedNodeSet1-2;3*fixedNodeSet2-2];
-fixedSet2 = [3*fixedNodeSet3-1;3*fixedNodeSet3-2];
-fixed = union(fixedSet1,fixedSet2);
-free = setdiff(int32(1:nDof),fixed);
+edgeNodeSet1 = reshape(nodeNrs(3,:,1),[],1);  % y-dir constrain Ux Uz
+edgeNodeSet2 = reshape(nodeNrs(3,:,end),[],1);% y-dir constrain Ux
+edgeNodeSet3 = reshape(nodeNrs(3,1,:),[],1);  % z-dir constrain Ux Uy
+edgeNodeSet4 = reshape(nodeNrs(3,end,:),[],1);% z-dir constrain Ux
+% edgeNodeSet1 (Z=1): Ux, Uz
+dof1_Ux = 3*edgeNodeSet1 - 2;
+dof1_Uz = 3*edgeNodeSet1;
+% edgeNodeSet2 (Z=end): Ux,
+dof2_Ux = 3*edgeNodeSet2 - 2;
+% edgeNodeSet3 (Y=1): Ux, Uy
+dof3_Ux = 3*edgeNodeSet3 - 2;
+dof3_Uy = 3*edgeNodeSet3 - 1;
+% % edgeNodeSet4 (Y=end): Ux
+dof4_Ux = 3*edgeNodeSet4 - 2;
+temp1 = union([dof1_Ux; dof1_Uz], dof2_Ux);
+temp2 = union(temp1, [dof3_Ux; dof3_Uy]);
+fixed = union(temp2, dof4_Ux);
 
-%% 6. Load Definition (Out-of-plane load)
+fixed = int32(fixed);
+free = setdiff(int32(1:nDof), fixed);
+
+%% 6. Load Definition 
 waveform = xPhys(:,:,floor(nelz/2));
-elLoadX = find(waveform(:,end)>0);elLoadZ = 1:nelz;
-loadDof = squeeze(3*nodeNrs(elLoadX(1):elLoadX(end)+1,end,elLoadZ(1):elLoadZ(end)+1));
+elLoadX = find(waveform(:,end)>0);elLoadZ = 1:nelz;elLoadY = 1:nely;
+loadDof1 = squeeze(3*nodeNrs(elLoadX(1):elLoadX(end)+1,...
+                             elLoadY(1):elLoadY(end)+1,...
+                             1));  % positive z-dir
+loadDof2 = squeeze(3*nodeNrs(elLoadX(1):elLoadX(end)+1,...
+                             elLoadY(1):elLoadY(end)+1,...
+                             end));% negtive z-dir
 magF = 1;
-nelF = size(loadDof)-1;
-modF = magF/(nelF(1)*nelF(2))*ones(size(loadDof));
-[modF(1,:),modF(end,:)] = deal(modF(1,:)/2,modF(end,:)/2);
-[modF(:,1),modF(:,end)] = deal(modF(:,1)/2,modF(:,end)/2);
-F = fsparse(loadDof(:),1,-modF(:),[nDof,1]);
+modF1 = magF * ones(size(loadDof1));
+[modF1(1,:),modF1(end,:)] = deal(modF1(1,:)/2,modF1(end,:)/2);
+[modF1(:,1),modF1(:,end)] = deal(modF1(:,1)/2,modF1(:,end)/2);
+modF2 = -magF * ones(size(loadDof2));
+[modF2(1,:),modF2(end,:)] = deal(modF2(1,:)/2,modF2(end,:)/2);
+[modF2(:,1),modF2(:,end)] = deal(modF2(:,1)/2,modF2(:,end)/2);
+
+F = fsparse([loadDof1(:); loadDof2(:)], 1, [modF1(:); modF2(:)], [nDof,1]);
 
 %% 7. Global Elastic Stiffness & Static Solution
 sK = xPhys(:)*E0;
@@ -216,7 +237,7 @@ threshold = 0.7;     % Element filter threshold
 lineWidth = 0.5;
 Width = 8;Height = 2;
 isDeform = 0;        % 1: plot deformed shape; 0: original shape
-isSave = 0;          % 1: auto save 600dpi TIFF; 0: only display
+isSave = 1;          % 1: auto save 600dpi TIFF; 0: only display
 maxDU = isDeform*Lx/5;
 axislim = [-maxDU,Lx+maxDU;-maxDU,Lx+(nelz/nelx*Lx);-maxDU,Lx+(nelz/nelx*Lx)];
 
@@ -246,6 +267,6 @@ xlim(axislim(1,:));ylim(axislim(2,:));zlim(axislim(3,:));
 
 % Save figure
 if isSave ==1
-    fileName = sprintf('Benchmark-Proposed-BucklingMode%d-%.5g.tif',mode,lambda(mode));
+    fileName = sprintf('Benchmark_2-Proposed-BucklingMode%d-%.5g.tif',mode,lambda(mode));
     exportgraphics(gca,fileName,'Resolution',600);
 end
